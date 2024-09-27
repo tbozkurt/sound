@@ -345,6 +345,8 @@ function speechRecAPP(set){
     });
 
     recognition.addEventListener("result", function(e){
+        console.log("result");
+        console.log(e.results);
         let current = e.resultIndex;
         SR.lastResult = e.results[current][0].transcript;
         console.log(SR.lastResult);
