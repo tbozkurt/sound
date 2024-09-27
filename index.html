@@ -222,7 +222,7 @@
 <body>
 
 <div id="container"></div>
-<div id="Canceled">Canceel Record</div>
+<div id="Canceled">Canceeeel Record</div>
 
 <script>
 
@@ -323,15 +323,20 @@ function speechRecAPP(set){
         }
     }
 
-    SR.stopSoundRecord = function(){
+    SR.stopSoundRecord = function(e){
         SR.soundRecord.stop();
         console.log( SR.streamMedia.getTracks() );
         SR.streamMedia.getTracks().forEach(function(track){
             track.stop()
         });
 
-        SR.soundRecord = null;
-        SR.streamMedia = null;
+/*        console.log(e.results);
+        let current = e.resultIndex;
+        SR.lastResult = e.results[current][0].transcript;
+        console.log(SR.lastResult);*/
+
+        //SR.soundRecord = null;
+        //SR.streamMedia = null;
     }
 
     recognition.addEventListener("start", function(){
