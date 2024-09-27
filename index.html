@@ -222,7 +222,7 @@
 <body>
 
 <div id="container"></div>
-<div id="Canceled">Cancel Record</div>
+<div id="Canceled">Canceel Record</div>
 
 <script>
 
@@ -325,6 +325,7 @@ function speechRecAPP(set){
 
     SR.stopSoundRecord = function(){
         SR.soundRecord.stop();
+        console.log( SR.streamMedia.getTracks() );
         SR.streamMedia.getTracks().forEach(function(track){
             track.stop()
         });
