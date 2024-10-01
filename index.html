@@ -222,7 +222,7 @@
 <body>
 
 <div id="container"></div>
-<div id="Canceled">Canceeeel Record</div>
+<div id="Canceled">Cancel Record</div>
 
 <script>
 
@@ -303,11 +303,30 @@ function speechRecAPP(set){
     };
 
     SR.startSoundRecord = function (){
-        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                SR.media = new MediaRecorder(stream);
+                SR.media.start();
+                SR.media.addEventListener("start", function(e) {
+                    SR.recordStartTime = new Date();
+                    SR.startViewFNC();
+                    console.log("Ses kaydı başladı");
+                });
+/*                audioRecorder.stop();
+                const blobObj = new Blob(audioChunks, { type: 'audio/webm' });
+                const audioUrl = URL.createObjectURL(blobObj);
+                const audio = new Audio(audioUrl);
+                audio.play();*/
+            })
+
+
+    }
+/*        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(function(stream){
                     SR.streamMedia = stream;
                     SR.soundRecord = new MediaRecorder(stream);
+                    SR.audioBlobs = [];
                     SR.soundRecord.addEventListener("start", function(e) {
                         SR.recordStartTime = new Date();
                         SR.startViewFNC();
@@ -321,7 +340,7 @@ function speechRecAPP(set){
                     SR.warning.show();
                 });
         }
-    }
+    }*/
 
     SR.stopSoundRecord = function(e){
         SR.soundRecord.stop();
@@ -353,7 +372,7 @@ function speechRecAPP(set){
     recognition.addEventListener("end", function(){
         console.log("end");
         SR.stopViewFNC();
-        SR.stopSoundRecord();
+        //SR.stopSoundRecord();
     });
 
     recognition.addEventListener("result", function(e){
