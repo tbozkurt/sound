@@ -358,12 +358,12 @@ function speechRecAPP(set){
     recognition.addEventListener("start", function(){
         console.log("OMG");
         SR.recordPrepare.css("visibility", "visible");
-        SR.startSoundRecord();
+        //SR.startSoundRecord();
 
-        /*
+
         SR.recordStartTime = new Date();
         SR.startViewFNC();
-        */
+
     });
 
     recognition.addEventListener("soundstart", () => {
