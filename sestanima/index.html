@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="/mobileplayer/contentplayer/assets/font/nunito/nunito.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <style>
+            #Canceled{
+                width: 200px;
+                height: 50px;
+                background-color: red;
+                border-radius: 50px;
+                text-align: center;
+                line-height: 50px;
+            }
+
+            body{
+                background-color: black;
+            }
+
+            /* Sound Record App */
+            .Record_grayFilter{
+                filter: invert(29%) sepia(69%) saturate(7448%) hue-rotate(353deg) brightness(90%) contrast(128%);
+            }
+
+            .Record_pinkFilter{
+                filter: invert(16%) sepia(79%) saturate(6210%) hue-rotate(329deg) brightness(80%) contrast(86%);
+            }
+
+            .Record_Main{
+                width: 260px;
+                padding: 10px !important;
+                border-radius: 10px;
+                background-color: silver !important;
+                font-family: 'Nunito', sans-serif !important;
+                user-select: none;
+            }
+
+            .Record_IconMain{
+                left: 0;
+                top: 0;
+                width: 150px;
+                height: 150px;
+                position: relative;
+            }
+
+            .Record_Btn{
+                left: 0;
+                top: 0;
+                width: 150px;
+                height: 150px;
+                position: absolute;
+            }
+
+            .Record_Btn img{
+                width: 150px;
+                height: 150px;
+            }
+
+            .Record_commonPlayBtn{
+                cursor: pointer;
+            }
+
+            .Record_commonStopBtn{
+                cursor: pointer;
+            }
+
+            #Record_stopRecordBtn{
+                display: none;
+                cursor: pointer;
+            }
+
+            #Record_Panel{
+                width: 100%;
+                display: flex;
+                height: 50px;
+                visibility: hidden;
+                align-items: center;
+                justify-content: center;
+                border-radius: 10px;
+                border: 1px solid gray;
+                box-sizing: border-box;
+                margin-top: 6px;
+            }
+
+            #Record_RedCircle{
+                width: 14px;
+                height: 14px;
+                margin: 5px;
+                background-color: #ef5351;
+                border-radius: 50px;
+            }
+
+            #Record_Time{
+                font-size: 22px;
+            }
+
+            #Record_CancelBtn{
+                width: 50px;
+                height: 50px;
+                background-color: hotpink;
+            }
+
+            #Record_startPlayBtn {
+                width: 260px;
+                height: 50px;
+                line-height: 50px;
+                border-radius: 10px;
+                background-color: #78909c;
+                text-align: center;
+                font-size: 22px;
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+                margin-top: 6px;
+                display: none;
+            }
+
+            #Record_playProgress{
+                position: absolute;
+                background-color: #66bb6a;
+                width: 0;
+                height: 100%;
+            }
+
+            #Record_playTxt {
+                width: 100%;
+                position: absolute;
+            }
+
+            .Record_center{
+                display: flex !important;
+                justify-content: center !important;
+            }
+
+            #Record_warning{
+                text-align: center;
+                display: none;
+            }
+
+            #Record_soundWave{
+                left: calc(50% - 25px);
+                width: 50px;
+                height: 50px;
+                position: absolute;
+            }
+
+            #Record_soundWave img{
+                width: 100%;
+                height: 100%;
+            }
+
+            #Record_prepare{
+                width: 100%;
+                height: 100%;
+                background-color: rgba(192, 192, 192, 0.5);
+                position: absolute;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                visibility: hidden;
+            }
+
+            .Record_normBtn{
+                width: 100%;
+                height: 50px;
+                border-radius: 10px;
+                font-size: 22px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background-color: #ef5350;
+                margin-top: 6px;
+            }
+
+            @keyframes recordCircleAni {
+                0% {
+                    background-color: #ef5351;
+                }
+                50% {
+                    background-color: silver;
+                }
+                100% {
+                    background-color: #ef5351;
+                }
+            }
+
+            @keyframes recordProgressAni {
+                0% {
+                    width: 0;
+                }
+                100% {
+                    width: 100%;
+                }
+            }
+
+            /*  ios toggle */
+            .iosToggle{
+                border-radius: 500px;
+                position: relative;
+                user-select: none;
+                cursor: pointer;
+            }
+
+            .iosToggle_circle{
+                width: 50%;
+                height: 100%;
+                background-color: #f5f5f5 !important;
+                border: 1px solid silver !important;
+                filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
+                border-radius: 500px;
+                position: absolute;
+                left: 0;
+            }
+
+
+        </style>
+        <title>Speech to Text</title>
+    </head>
+<body>
+
+<div id="container"></div>
+<div id="Canceled">Canceeeel Record</div>
+
+<script>
+
+var PLX = {imageFolder:""};
+
+function evaluation(deneme){
+    console.log("evaluation", deneme);
+}
+
+function speechRecAPP(set){
+    console.log(set);
+    var SR = {
+        elapsedTime:0,
+        duration: 10,
+        recordInterval: null,
+        recordStartTime: null,
+        lastResult:""
+    }
+
+    SR.html =
+        `<div class="Record_Main">
+            <div class="Record_center">
+                <div class="Record_IconMain">
+                    <div id="Record_startRecordBtn" class="Record_Btn"><img src="https://preprod.okulistik.com/mobileplayer/contentplayer/assets/image/microfone.svg"/></div>
+                    <div id="Record_stopRecordBtn" class="Record_Btn"><img src="https://preprod.okulistik.com/mobileplayer/contentplayer/assets/image/microfone.svg" class="Record_Btn Record_grayFilter"/></div>
+                    <div id="Record_prepare">Lütfen bekleyin</div>
+                </div>
+            </div>
+            <div class="Record_center">
+                <div id="Record_startPlayBtn">
+                    <div id="Record_playProgress"></div>
+                    <div id="Record_playTxt"></div>
+                    <div id="Record_soundWave"><img src="https://preprod.okulistik.com/mobileplayer/contentplayer/assets/image/soundWave.svg"/></div>
+                </div>
+            </div>
+            <div id="Record_warning">Tarayıcı bu özelliği desteklemiyor. Lütfen Chrome tarayıcı kullanınız.</div>
+        </div>`;
+
+    set.container.html(SR.html);
+
+    SR.startRecordBtn = set.container.find("#Record_startRecordBtn");
+    SR.stopRecordBtn = set.container.find("#Record_stopRecordBtn");
+    SR.cancelRecordBtn = set.container.find("#cancelRecordBtn");
+    SR.startPlayBtn = set.container.find("#Record_startPlayBtn").css("margin-top", 20);
+    SR.playTxt = set.container.find("#Record_playTxt");
+    SR.playProgress = set.container.find("#Record_playProgress").css("background-color", "#ef5351");
+    SR.warning = set.container.find("#Record_warning").css("margin-top", 20);
+    SR.soundWave = set.container.find("#Record_soundWave");
+    SR.audioElement = set.container.find("#Record_audioElement")[0];
+    SR.recordPrepare = set.container.find("#Record_prepare");
+
+    let recognition;
+    try{
+        recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+    }catch(e){
+        SR.warning.show();
+        return false;
+    }
+
+    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.lang = set.lang;
+
+    recognition.onerror = function(e){
+        if (e.error === 'no-speech') {
+            console.log("no-speech")
+        }else if(e.error === "audio-capture") {
+            console.log("audio-capture");
+        }else if(e.error === "aborted") {
+            console.log("aborted");
+        }else if(e.error === "not-allowed"){
+            SR.warning.show();
+        }else if(e.error === "service-not-allowed"){
+            console.log("service-not-allowed");
+        }else{
+            console.error('Speech recognition error:', e.error);
+        }
+    };
+
+    SR.startSoundRecord = function (){
+        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream){
+                    SR.streamMedia = stream;
+                    SR.soundRecord = new MediaRecorder(stream);
+                    SR.soundRecord.addEventListener("start", function(e) {
+                        SR.recordStartTime = new Date();
+                        SR.startViewFNC();
+                        console.log("Ses kaydı başladı");
+                    });
+
+                    SR.soundRecord.start();
+                })
+                .catch(function(err) {
+                    console.log("err", err);
+                    SR.warning.show();
+                });
+        }
+    }
+
+    SR.stopSoundRecord = function(e){
+        SR.soundRecord.stop();
+        console.log( SR.streamMedia.getTracks() );
+        SR.streamMedia.getTracks().forEach(function(track){
+            track.stop()
+        });
+
+/*        console.log(e.results);
+        let current = e.resultIndex;
+        SR.lastResult = e.results[current][0].transcript;
+        console.log(SR.lastResult);*/
+
+        //SR.soundRecord = null;
+        //SR.streamMedia = null;
+    }
+
+    recognition.addEventListener("start", function(){
+        SR.recordPrepare.css("visibility", "visible");
+        SR.startSoundRecord();
+    });
+
+    recognition.addEventListener("end", function(){
+        console.log("end");
+        SR.stopViewFNC();
+        SR.stopSoundRecord();
+    });
+
+    recognition.addEventListener("result", function(e){
+        console.log("result");
+        console.log(e.results);
+        let current = e.resultIndex;
+        SR.lastResult = e.results[current][0].transcript;
+        console.log(SR.lastResult);
+    });
+
+    SR.startRecordBtn.on("click", function(){
+        console.log("start");
+        recognition.start();
+
+    });
+
+    SR.stopRecordBtn.on("click", function(){
+        console.log("stopClick");
+        recognition.stop();
+    });
+
+    SR.startViewFNC = function(){
+        SR.stopRecordAnimation();
+        SR.lastResult = "";
+        SR.recordElapsedTimeFNC();
+        clearInterval(SR.recordInterval);
+        SR.recordInterval = setInterval(SR.recordElapsedTimeFNC, 1000);
+        SR.startRecordBtn.hide();
+        SR.stopRecordBtn.show();
+        SR.startPlayBtn.show().css("width", 260);
+        SR.playTxt.css("opacity", 1);
+        SR.soundWave.css("opacity", 0);
+        if(SR.Animation) {
+            SR.Animation.kill();
+        }
+
+        SR.recordPrepare.css("visibility", "hidden");
+        SR.playProgress.css("width", 0);
+        SR.Animation = gsap.to(SR.playProgress, SR.duration, {width:"100%", ease:"none"});
+    }
+
+    SR.stopViewFNC = function(){
+        SR.startRecordBtn.show();
+        SR.stopRecordBtn.hide();
+        if(SR.Animation){
+            SR.Animation.kill();
+        }
+        clearInterval(SR.recordInterval);
+        SR.audioAnalyzer();
+    }
+
+    SR.recordElapsedTimeFNC = function(){
+        SR.elapsedTime = SR.recordTimeCalcFNC(SR.recordStartTime);
+        SR.playTxt.text(SR.elapsedTime);
+
+        if(SR.maxRecordTimeControlFNC(SR.elapsedTime)){
+            recognition.stop();
+            SR.stopViewFNC;
+        }
+    }
+
+    SR.recordTimeCalcFNC = function(startTime) {
+        let endTime = new Date();
+
+        let timeDiff = endTime - startTime;
+        timeDiff = timeDiff / 1000;
+
+        let seconds = Math.floor(timeDiff % 60);
+        seconds = seconds < 10 ? "0"+ seconds : seconds;
+
+        timeDiff = Math.floor(timeDiff / 60);
+
+        let minutes = timeDiff % 60;
+        minutes = minutes < 10 ? "0"+ minutes : minutes;
+
+        timeDiff = Math.floor(timeDiff / 60);
+
+        let hours = timeDiff % 24;
+        timeDiff = Math.floor(timeDiff / 24);
+
+        let days = timeDiff;
+
+        let totalHours = hours + (days * 24);
+        totalHours = totalHours < 10 ? "0"+ totalHours : totalHours;
+
+        if(totalHours === "00"){
+            return minutes +":"+ seconds;
+        } else {
+            return totalHours +":"+ minutes +":"+ seconds;
+        }
+    }
+
+    SR.maxRecordTimeControlFNC = function(elapsedTime){
+        var second = Number(elapsedTime.split(":")[1]);
+        return second >= SR.duration;
+    }
+
+    SR.stopRecordAnimation = function(){
+        if(SR.Animation2) {
+            if(SR.Animation2.isActive()){
+                SR.Animation2.kill();
+            }
+        }
+    }
+
+    SR.audioAnalyzer = function(){
+        console.log("SR.evaluteUserAnswer", SR.lastResult);
+        if(SR.lastResult.length){
+            SR.playTxt.css("opacity", 0);
+            SR.soundWave.css("opacity", 1);
+            SR.playProgress.css("width", "100%");
+            SR.stopRecordAnimation()
+            SR.Animation2 = gsap.to(SR.startPlayBtn, 0.3, {width: 110, opacity:1, onComplete: SR.evaluteUserAnswer});
+        }else{
+            SR.startPlayBtn.hide();
+        }
+    }
+
+    SR.evaluteUserAnswer = function(){
+        var found = false;
+        var userAnswer = SR.lastResult.replace(new RegExp("\\W+", "g"), '').toLowerCase();
+        var rightAnswer = set.rightAnswer.replace(new RegExp("\\W+", "g"), '').toLowerCase();
+        if(userAnswer === rightAnswer){
+            found = true;
+        }
+
+        set.evaluation(found);
+    }
+
+    SR.tellAnswer = function(){
+        const speech = new SpeechSynthesisUtterance();
+        speech.text = set.rightAnswer.toLowerCase();
+        speech.volume = 1;
+        speech.rate = 1;
+        speech.pitch = 1;
+        speech.lang = set.lang;
+        window.speechSynthesis.speak(speech);
+    }
+
+    return {showAnswer: SR.tellAnswer, stopRecord: function(){
+        SR.lastResult = "";
+        recognition.abort();
+    }}
+}
+
+var XX = speechRecAPP({container: $("#container"), evaluation: evaluation, rightAnswer:"Mustafa’ya oy verin gerisini boş verin",lang:"tr-TR"});
+
+
+$("#Canceled").on("click", function(){
+    console.log("a");
+    console.log( XX );
+    XX.stopRecord();
+});
+
+</script>
+
+</body>
+</html>
