@@ -222,7 +222,7 @@
 <body>
 
 <div id="container"></div>
-<div id="Canceled">Cancel Record</div>
+<div id="Canceled">Canceel Record</div>
 
 <script>
 
@@ -307,6 +307,7 @@ function speechRecAPP(set){
             .then(stream => {
                 SR.media = new MediaRecorder(stream);
                 SR.media.start();
+                SR.media.stop();
                 SR.media.addEventListener("start", function(e) {
                     SR.recordStartTime = new Date();
                     SR.startViewFNC();
