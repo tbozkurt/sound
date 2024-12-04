@@ -493,6 +493,7 @@ function speechRecAPP(set){
     }
 
     SR.evaluteUserAnswer = function(){
+        console.log("yeni", set);
         var found = false;
         var userAnswer = SR.lastResult.replace(new RegExp("\\W+", "g"), '').toLowerCase();
         var rightAnswer = set.rightAnswer.replace(new RegExp("\\W+", "g"), '').toLowerCase();
@@ -519,7 +520,7 @@ function speechRecAPP(set){
     }}
 }
 
-var XX = speechRecAPP({container: $("#container"), evaluation: evaluation, rightAnswer:"Mustafa’ya oy verin gerisini boş verin",lang:"tr-TR"});
+var XX = speechRecAPP({container: $("#container"), evaluation: evaluation, rightAnswer:"Mustafa’ya oy verin gerisini boş verin",lang:"tr"});
 
 
 $("#Canceled").on("click", function(){
